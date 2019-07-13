@@ -13,10 +13,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import com.alibaba.druid.sql.SQLUtils;
-import com.alibaba.druid.sql.ast.SQLExpr;
-import com.alibaba.druid.sql.ast.SQLName;
-import com.alibaba.druid.sql.ast.SQLOrderingSpecification;
-import com.alibaba.druid.sql.ast.SQLStatement;
+import com.alibaba.druid.sql.ast.*;
 import com.alibaba.druid.sql.ast.expr.SQLAggregateExpr;
 import com.alibaba.druid.sql.ast.expr.SQLAllColumnExpr;
 import com.alibaba.druid.sql.ast.expr.SQLBinaryOpExpr;
@@ -30,6 +27,7 @@ import com.alibaba.druid.sql.ast.expr.SQLTextLiteralExpr;
 import com.alibaba.druid.sql.ast.statement.*;
 import com.alibaba.druid.sql.dialect.db2.ast.stmt.DB2SelectQueryBlock;
 import com.alibaba.druid.sql.dialect.db2.visitor.DB2OutputVisitor;
+import com.alibaba.druid.sql.dialect.mysql.ast.MySqlForceIndexHint;
 import com.alibaba.druid.sql.dialect.mysql.ast.expr.MySqlOrderingExpr;
 import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
 import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock.Limit;
@@ -426,11 +424,12 @@ public class DruidSelectParser extends DefaultDruidParser {
 					sqlIdentifierExpr.setName(node.getSubTableName());
 					SQLExprTableSource from2 = new SQLExprTableSource(sqlIdentifierExpr);
 					from2.setAlias(from.getAlias());
+					from2.setHints(from.getHints());
 					mysqlSelectQuery.setFrom(from2);
 					node.setStatement(stmt.toString());
 	            }
 			}
-			
+
 			rrs.setCacheAble(isNeedCache(schema, rrs, mysqlSelectQuery, allConditions));
 		} else if (sqlSelectQuery instanceof SQLUnionQuery) {
 			SQLUnionQuery mySqlUnionQuery = (SQLUnionQuery) sqlSelectQuery;

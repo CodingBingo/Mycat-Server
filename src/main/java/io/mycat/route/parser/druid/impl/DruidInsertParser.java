@@ -43,6 +43,7 @@ public class DruidInsertParser extends DefaultDruidParser {
 	 */
 	@Override
 	public void statementParse(SchemaConfig schema, RouteResultset rrs, SQLStatement stmt) throws SQLNonTransientException {
+
 		MySqlInsertStatement insert = (MySqlInsertStatement)stmt;
 		String tableName = StringUtil.removeBackquote(insert.getTableName().getSimpleName()).toUpperCase();
 

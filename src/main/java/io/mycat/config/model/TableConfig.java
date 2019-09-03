@@ -45,6 +45,7 @@ public class TableConfig {
     private final ArrayList<String> dataNodes;
     private final ArrayList<String> distTables;
     private final RuleConfig rule;
+    private final RuleConfig dbRule;
     private final String partitionColumn;
     private final boolean ruleRequired;
     private final TableConfig parentTC;
@@ -63,7 +64,7 @@ public class TableConfig {
     private ReentrantReadWriteLock reentrantReadWriteLock = new ReentrantReadWriteLock(false);
 
     public TableConfig(String tableName, String primaryKey, boolean autoIncrement, boolean needAddLimit, int tableType,
-                       String dataNode, Set<String> dbType, RuleConfig rule, boolean ruleRequired,
+                       String dataNode, Set<String> dbType, RuleConfig rule, RuleConfig dbRule, boolean ruleRequired,
                        TableConfig parentTC, boolean isChildTable, String joinKey,
                        String parentKey, String subTables) {
         if (tableName == null) {
@@ -104,6 +105,7 @@ public class TableConfig {
         }
 
         this.rule = rule;
+        this.dbRule = dbRule;
         this.partitionColumn = (rule == null) ? null : rule.getColumn();
         partionKeyIsPrimaryKey = (partitionColumn == null) ? primaryKey == null : partitionColumn.equals(primaryKey);
         this.ruleRequired = ruleRequired;
@@ -257,6 +259,10 @@ public class TableConfig {
 
     public RuleConfig getRule() {
         return rule;
+    }
+
+    public RuleConfig getDbRule() {
+        return dbRule;
     }
 
     public boolean primaryKeyIsPartionKey() {

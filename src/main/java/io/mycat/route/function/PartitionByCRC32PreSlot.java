@@ -235,7 +235,7 @@ public class PartitionByCRC32PreSlot extends AbstractPartitionAlgorithm
         int count = 1024;
         String sb = genDataNodesString(count);
         TableConfig tableConf = new TableConfig("test", "id", true, false, -1, sb,
-                null, rule, true, null, false, null, null, null);
+                null, rule,null,true, null, false, null, null, null);
 
         hash.setTableConfig(tableConf);
         hash.reInit();

@@ -27,6 +27,7 @@
 <!ATTLIST table nameSuffix CDATA #IMPLIED>
 <!ATTLIST table dataNode CDATA #REQUIRED>
 <!ATTLIST table rule NMTOKEN #IMPLIED>
+<!ATTLIST table dbRule NMTOKEN #IMPLIED>
 <!ATTLIST table ruleRequired NMTOKEN #IMPLIED>
 <!ATTLIST table primaryKey NMTOKEN #IMPLIED>
 <!ATTLIST table subTables CDATA #IMPLIED>

@@ -31,7 +31,8 @@ public class DDLRouteTest {
 	public DDLRouteTest() {
 		String schemaFile = "/route/schema.xml";
 		String ruleFile = "/route/rule.xml";
-		SchemaLoader schemaLoader = new XMLSchemaLoader(schemaFile, ruleFile);
+        String dbRuleFile = "/route/dbRule.xml";
+		SchemaLoader schemaLoader = new XMLSchemaLoader(schemaFile, ruleFile, dbRuleFile);
 		schemaMap = schemaLoader.getSchemas();
 		MycatServer.getInstance().getConfig().getSchemas().putAll(schemaMap);
 		MycatServer.getInstance().getConfig().getSystem().setUseGlobleTableCheck(0); //DDL Route Test  不开启全局表一致性检查

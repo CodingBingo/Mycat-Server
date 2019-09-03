@@ -42,6 +42,7 @@ public class ConfigComparer {
 	private final static String TABLES_FILE = "/migrateTables.properties";  
     private final static String NEW_SCHEMA = "/newSchema.xml";
 	private final static String NEW_RULE = "/newRule.xml";
+	private final static String NEW_DB_RULE = "/newDbRule.xml";
 	private final static String DN_INDEX_FILE = "/dnindex.properties";
 	
 	private SchemaLoader oldLoader;
@@ -87,7 +88,7 @@ public class ConfigComparer {
 	
 	private void loadNewConfig(){
 		try{
-			newLoader = new XMLSchemaLoader(NEW_SCHEMA, NEW_RULE);
+			newLoader = new XMLSchemaLoader(NEW_SCHEMA, NEW_RULE, NEW_DB_RULE);
 			newDataHosts = newLoader.getDataHosts();
 			newDataNodes = newLoader.getDataNodes();
 			newSchemas = newLoader.getSchemas();

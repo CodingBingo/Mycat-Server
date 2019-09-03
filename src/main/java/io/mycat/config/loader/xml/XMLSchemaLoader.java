@@ -26,6 +26,7 @@ package io.mycat.config.loader.xml;
 import io.mycat.backend.datasource.PhysicalDBPool;
 import io.mycat.config.loader.SchemaLoader;
 import io.mycat.config.model.*;
+import io.mycat.config.model.rule.DatabaseRuleConfig;
 import io.mycat.config.model.rule.RuleConfig;
 import io.mycat.config.model.rule.TableRuleConfig;
 import io.mycat.config.util.ConfigException;
@@ -60,15 +61,18 @@ public class XMLSchemaLoader implements SchemaLoader {
     private final static String DEFAULT_XML = "/schema.xml";
 
     private final Map<String, TableRuleConfig> tableRules;
+    private final Map<String, DatabaseRuleConfig> databaseRules;
     private final Map<String, DataHostConfig> dataHosts;
     private final Map<String, DataNodeConfig> dataNodes;
     private final Map<String, SchemaConfig> schemas;
 
-    public XMLSchemaLoader(String schemaFile, String ruleFile) {
+    public XMLSchemaLoader(String schemaFile, String ruleFile, String databaseRuleFile) {
         //先读取rule.xml
         XMLRuleLoader ruleLoader = new XMLRuleLoader(ruleFile);
+        XMLDatabaseRuleLoader databaseRuleLoader = new XMLDatabaseRuleLoader(databaseRuleFile);
         //将tableRules拿出，用于这里加载Schema做rule有效判断，以及之后的分片路由计算
         this.tableRules = ruleLoader.getTableRules();
+        this.databaseRules = databaseRuleLoader.getDatabaseRules();
         //释放ruleLoader
         ruleLoader = null;
         this.dataHosts = new HashMap<String, DataHostConfig>();
@@ -79,7 +83,7 @@ public class XMLSchemaLoader implements SchemaLoader {
     }
 
     public XMLSchemaLoader() {
-        this(null, null);
+        this(null, null, null);
     }
 
     @Override
@@ -342,6 +346,16 @@ public class XMLSchemaLoader implements SchemaLoader {
                 }
             }
 
+            DatabaseRuleConfig databaseRule = null;
+            if (tableElement.hasAttribute("dbRule")) {
+                String ruleName = tableElement.getAttribute("dbRule");
+                databaseRule = databaseRules.get(ruleName);
+                if (tableRule == null) {
+                    throw new ConfigException("rule " + ruleName + " is not found!");
+                }
+            }
+
+
             boolean ruleRequired = false;
             //记录是否绑定有分片规则
             if (tableElement.hasAttribute("ruleRequired")) {
@@ -382,7 +396,7 @@ public class XMLSchemaLoader implements SchemaLoader {
                 TableConfig table = new TableConfig(tableName, primaryKey,
                         autoIncrement, needAddLimit, tableType, dataNode,
                         getDbType(dataNode),
-                        (tableRuleConfig != null) ? tableRuleConfig.getRule() : null,
+                        (tableRuleConfig != null) ? tableRuleConfig.getRule() : null, (databaseRule != null) ? databaseRule.getRule() : null,
                         ruleRequired, null, false, null, null, subTables);
                 //因为需要等待TableConfig构造完毕才可以拿到dataNode节点数量,所以Rule构造延后到此处 @cjw
                 if ((tableRuleConfig != null) && (tableRuleConfig.getRule().getRuleAlgorithm() instanceof TableRuleAware)) {
@@ -517,7 +531,7 @@ public class XMLSchemaLoader implements SchemaLoader {
             TableConfig table = new TableConfig(cdTbName, primaryKey,
                     autoIncrement, needAddLimit,
                     TableConfig.TYPE_GLOBAL_DEFAULT, dataNodes,
-                    getDbType(dataNodes), null, false, parentTable, true,
+                    getDbType(dataNodes), null, null, false, parentTable, true,
                     joinKey, parentKey, subTables);
 
             if (tables.containsKey(table.getName())) {

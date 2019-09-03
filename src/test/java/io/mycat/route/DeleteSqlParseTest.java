@@ -29,7 +29,8 @@ public class DeleteSqlParseTest {
 	public DeleteSqlParseTest() {
 		String schemaFile = "/route/schema.xml";
 		String ruleFile = "/route/rule.xml";
-		SchemaLoader schemaLoader = new XMLSchemaLoader(schemaFile, ruleFile);
+		String dbRuleFile = "/route/dbRule.xml";
+		SchemaLoader schemaLoader = new XMLSchemaLoader(schemaFile, ruleFile, dbRuleFile);
 		schemaMap = schemaLoader.getSchemas();
         RouteStrategyFactory.init();
         routeStrategy = RouteStrategyFactory.getRouteStrategy("druidparser");

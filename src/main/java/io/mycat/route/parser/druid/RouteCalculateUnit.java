@@ -25,7 +25,7 @@ public class RouteCalculateUnit {
 
 	public void addShardingExpr(String tableName, String columnName, Object value) {
 		Map<String, Set<ColumnRoutePair>> tableColumnsMap = tablesAndConditions.get(tableName);
-		
+
 		if (value == null) {
 			// where a=null
 			return;
@@ -35,7 +35,7 @@ public class RouteCalculateUnit {
 			tableColumnsMap = new LinkedHashMap<String, Set<ColumnRoutePair>>();
 			tablesAndConditions.put(tableName, tableColumnsMap);
 		}
-		
+
 		String uperColName = columnName.toUpperCase();
 		Set<ColumnRoutePair> columValues = tableColumnsMap.get(uperColName);
 

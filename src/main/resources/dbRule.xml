@@ -10,23 +10,23 @@
 <!DOCTYPE mycat:rule SYSTEM "rule.dtd">
 <mycat:rule xmlns:mycat="http://io.mycat/">
 
-	<tableRule name="interactiveRule">
+	<databaseRule name="interactiveRule">
 		<rule>
 			<columns>to_id</columns>
 			<algorithm>mod-toid-10</algorithm>
 		</rule>
-	</tableRule>
+	</databaseRule>
 
-	<tableRule name="feedVisiableSepRule">
+	<databaseRule name="feedVisiableSepRule">
 		<rule>
 			<columns>userId</columns>
-			<algorithm>mod-user-10</algorithm>
+			<algorithm>mod-user-2</algorithm>
 		</rule>
-	</tableRule>
+	</databaseRule>
 
-	<function name="mod-user-10" class="io.mycat.route.function.PartitionByMod">
+	<function name="mod-user-2" class="io.mycat.route.function.PartitionByMod">
 		<!-- 暂时feedVisiable数据分为10张表 -->
-		<property name="count">10</property>
+		<property name="count">2</property>
 	</function>
 
 	<function name="mod-toid-10" class="io.mycat.route.function.PartitionByMod">

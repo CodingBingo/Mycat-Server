@@ -1394,13 +1394,52 @@ public class RouterUtil {
         Set<String> tablesRouteSet = new HashSet<String>();
 
         List<String> dataNodes = tableConfig.getDataNodes();
+		String dataNode = dataNodes.get(0);
         if(dataNodes.size()>1){
-			String msg = "can't suport district table  " + tableName + " schema:" + schema.getName() + " for mutiple dataNode " + dataNodes;
-        	LOGGER.warn(msg);
-			throw new SQLNonTransientException(msg);
-        }
-        String dataNode = dataNodes.get(0);
+        	RuleConfig ruleConfig = tableConfig.getDbRule();
+			if (ruleConfig == null) {
+				String msg = "can't suport district table  " + tableName + " schema:" + schema.getName() + " for mutiple dataNode " + dataNodes;
+				LOGGER.warn(msg);
+				throw new SQLNonTransientException(msg);
+			} else {
+				for(Map.Entry<String, Map<String, Set<ColumnRoutePair>>> entry : tablesAndConditions.entrySet()) {
+					boolean isFoundPartitionValue = partionCol != null && entry.getValue().get(partionCol) != null;
+					Map<String, Set<ColumnRoutePair>> columnsMap = entry.getValue();
 
+					Set<ColumnRoutePair> partitionValue = columnsMap.get(partionCol);
+					if (partitionValue == null || partitionValue.size() == 0) {
+						String msg = "can't suport district table  " + tableName + "without partition value. schema:" + schema.getName() + " for mutiple dataNode " + dataNodes;
+						LOGGER.warn(msg);
+						throw new SQLNonTransientException(msg);
+					} else {
+						for(ColumnRoutePair pair : partitionValue) {
+							AbstractPartitionAlgorithm algorithm = tableConfig.getDbRule().getRuleAlgorithm();
+							if(pair.colValue != null) {
+								Integer databaseIndex = algorithm.calculate(pair.colValue);
+								if(databaseIndex == null) {
+									String msg = "can't find any valid datanode :" + tableConfig.getName()
+											+ " -> " + tableConfig.getPartitionColumn() + " -> " + pair.colValue;
+									LOGGER.warn(msg);
+									throw new SQLNonTransientException(msg);
+								}
+								String nodeName = tableConfig.getDataNodes().get(databaseIndex);
+								if(nodeName != null) {
+									dataNode = nodeName;
+								}
+							} else {
+								//暂时只支持到某个指定的dataNode
+								String msg = "can't find any valid datanode :" + tableConfig.getName()
+										+ " -> " + tableConfig.getPartitionColumn() + " -> " + pair.colValue;
+								LOGGER.warn(msg);
+								throw new SQLNonTransientException(msg);
+							}
+						}
+					}
+				}
+			}
+			//计算所属db位置
+        }
+        
 		//主键查找缓存暂时不实现
         if(tablesAndConditions.isEmpty()){
         	List<String> subTables = tableConfig.getDistTables();
@@ -1559,8 +1598,9 @@ public class RouterUtil {
 					} else {
 						for(ColumnRoutePair pair : partitionValue) {
 							AbstractPartitionAlgorithm algorithm = tableConfig.getRule().getRuleAlgorithm();
+							AbstractPartitionAlgorithm dbAlgorithm = tableConfig.getDbRule().getRuleAlgorithm();
 							if(pair.colValue != null) {
-								Integer nodeIndex = algorithm.calculate(pair.colValue);
+								Integer nodeIndex = dbAlgorithm.calculate(pair.colValue);
 								if(nodeIndex == null) {
 									String msg = "can't find any valid datanode :" + tableConfig.getName()
 											+ " -> " + tableConfig.getPartitionColumn() + " -> " + pair.colValue;

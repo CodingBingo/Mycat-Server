@@ -271,7 +271,11 @@ public class DruidInsertParser extends DefaultDruidParser {
 					List<ValuesClause> valuesList = node.getValue();
 					insertStmt.setValuesList(valuesList);
 					if(tableConfig.isDistTable()) {
-						nodes[count] = new RouteResultsetNode(tableConfig.getDataNodes().get(0),
+						Integer dataNodeIndex = 0;
+						if (tableConfig.getDbRule() != null) {
+							dataNodeIndex = tableConfig.getDbRule().getRuleAlgorithm().calculate(nodeIndex + "");
+						}
+						nodes[count] = new RouteResultsetNode(tableConfig.getDataNodes().get(dataNodeIndex),
 								rrs.getSqlType(),insertStmt.toString());
 						if(tableConfig.getDistTables()==null){
 							String msg = " sub table not exists for " + nodes[count].getName() + " on " + tableName;

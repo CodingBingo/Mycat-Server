@@ -284,7 +284,7 @@ public class ServerConnection extends FrontendConnection {
 
 	public void routeEndExecuteSQL(String sql, final int type, final SchemaConfig schema) {
 		String uuid = UUID.randomUUID().toString();
-		LOGGER.info("Receive business sql: {}, uuid: {}", new Object[]{sql, uuid});
+		LOGGER.info("Receive business sql: {}, time: {}, uuid: {}", new Object[]{sql, System.currentTimeMillis(), uuid});
 		// 路由计算
 		RouteResultset rrs = null;
 		try {

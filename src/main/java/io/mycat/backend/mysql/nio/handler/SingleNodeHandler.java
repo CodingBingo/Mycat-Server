@@ -307,7 +307,11 @@ public class SingleNodeHandler implements ResponseHandler, Terminatable, LoadDat
 	 * 真正发送给应用是由对应的NIOSocketWR从写队列中读取ByteBuffer并返回的
 	 */
 	@Override
-	public void okResponse(byte[] data, BackendConnection conn) {      
+	public void okResponse(byte[] data, BackendConnection conn) {
+		if (conn instanceof MySQLConnection) {
+			MySQLConnection mySQLConnection = (MySQLConnection) conn;
+			LOGGER.info("Connection insert/update/delete row response end, threadId: {}, sql:{}, time: {}, uuid: {}", new Object[]{ mySQLConnection.getThreadId(), node.getStatement().replaceAll("\r\n|\r|\n", " "), System.currentTimeMillis(), node.getSource().getUuid()});
+		}
 		//
 		this.netOutBytes += data.length;
 		

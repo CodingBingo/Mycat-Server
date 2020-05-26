@@ -25,6 +25,7 @@ package io.mycat.server;
 
 import java.io.IOException;
 import java.nio.channels.NetworkChannel;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -282,6 +283,8 @@ public class ServerConnection extends FrontendConnection {
 
 
 	public void routeEndExecuteSQL(String sql, final int type, final SchemaConfig schema) {
+		String uuid = UUID.randomUUID().toString();
+		LOGGER.info("Receive business sql: {}, uuid: {}", new Object[]{sql, uuid});
 		// 路由计算
 		RouteResultset rrs = null;
 		try {
@@ -290,7 +293,7 @@ public class ServerConnection extends FrontendConnection {
 					.getRouterservice()
 					.route(MycatServer.getInstance().getConfig().getSystem(),
 							schema, type, sql, this.charset, this);
-
+			rrs.setUuid(uuid);
 		} catch (Exception e) {
 			StringBuilder s = new StringBuilder();
 			LOGGER.warn(s.append(this).append(sql).toString() + " err:" + e.toString(),e);

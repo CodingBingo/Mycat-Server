@@ -24,7 +24,8 @@
 package io.mycat.backend.mysql.nio;
 
 import io.mycat.backend.mysql.xa.TxState;
-import org.slf4j.Logger; import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.mycat.MycatServer;
 import io.mycat.backend.mysql.CharsetUtil;
@@ -281,6 +282,20 @@ public class MySQLConnection extends BackendAIOConnection {
 		packet.write(this);
 	}
 
+	protected void sendQueryCmd(RouteResultsetNode rrn, String query) {
+		CommandPacket packet = new CommandPacket();
+		packet.packetId = 0;
+		packet.command = MySQLPacket.COM_QUERY;
+		try {
+			packet.arg = query.getBytes(charset);
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
+		lastTime = TimeUtil.currentTimeMillis();
+		packet.write(this);
+		LOGGER.info("Send query threadId: {}, sql:{}, time: {}, uuid: {}", new Object[]{query.replaceAll("\r\n|\r|\n", " "), threadId, System.currentTimeMillis(), rrn.getSource().getUuid()});
+	}
+
 	private static void getCharsetCommand(StringBuilder sb, int clientCharIndex) {
 		sb.append("SET names ").append(CharsetUtil.getCharset(clientCharIndex))
 				.append(";");
@@ -437,7 +452,7 @@ public class MySQLConnection extends BackendAIOConnection {
 						+"\n in pool\n"
 				+this.getPool().getConfig());
 			}
-			sendQueryCmd(rrn.getStatement());
+			sendQueryCmd(rrn, rrn.getStatement());
 			return;
 		}
 		CommandPacket schemaCmd = null;
@@ -475,7 +490,7 @@ public class MySQLConnection extends BackendAIOConnection {
 		// and our query sql to multi command at last
 		sb.append(rrn.getStatement()+";");
 		// syn and execute others
-		this.sendQueryCmd(sb.toString());
+		this.sendQueryCmd(rrn, sb.toString());
 		// waiting syn result...
 
 	}

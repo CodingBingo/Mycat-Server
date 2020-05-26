@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import io.mycat.backend.mysql.nio.MySQLConnection;
+import io.mycat.backend.postgresql.utils.MD5Digest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -359,6 +361,10 @@ public class SingleNodeHandler implements ResponseHandler, Terminatable, LoadDat
 	 */
 	@Override
 	public void rowEofResponse(byte[] eof, BackendConnection conn) {
+		if (conn instanceof MySQLConnection) {
+			MySQLConnection mySQLConnection = (MySQLConnection) conn;
+			LOGGER.info("Connection query row response end, threadId: {}, sql:{}, time: {}, uuid: {}", new Object[]{ mySQLConnection.getThreadId(), node.getStatement().replaceAll("\r\n|\r|\n", " "), System.currentTimeMillis(), node.getSource().getUuid()});
+		}
 		
 		this.netOutBytes += eof.length;
 		
@@ -560,4 +566,7 @@ public class SingleNodeHandler implements ResponseHandler, Terminatable, LoadDat
 		return "SingleNodeHandler [node=" + node + ", packetId=" + packetId + "]";
 	}
 
+	public RouteResultsetNode getNode() {
+		return node;
+	}
 }

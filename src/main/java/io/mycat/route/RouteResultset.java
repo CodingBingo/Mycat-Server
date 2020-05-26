@@ -41,8 +41,7 @@ public final class RouteResultset implements Serializable {
     private RouteResultsetNode[] nodes; // 路由结果节点
     private Set<String> subTables;
     private SQLStatement sqlStatement;
-    private String uuid;
-
+    private LogTimer logTimer;
 
     private int limitStart;
     private boolean cacheAble;
@@ -449,11 +448,15 @@ public final class RouteResultset implements Serializable {
         return autoIncrement;
     }
 
-    public String getUuid() {
-        return uuid;
+    public LogTimer getLogTimer() {
+        if (logTimer != null) {
+            return logTimer;
+        } else {
+            return new LogTimer();
+        }
     }
 
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
+    public void setLogTimer(LogTimer logTimer) {
+        this.logTimer = logTimer;
     }
 }

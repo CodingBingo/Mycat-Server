@@ -310,7 +310,8 @@ public class SingleNodeHandler implements ResponseHandler, Terminatable, LoadDat
 	public void okResponse(byte[] data, BackendConnection conn) {
 		if (conn instanceof MySQLConnection) {
 			MySQLConnection mySQLConnection = (MySQLConnection) conn;
-			LOGGER.info("Connection insert/update/delete row response end, threadId: {}, sql:{}, time: {}, uuid: {}", new Object[]{ mySQLConnection.getThreadId(), node.getStatement().replaceAll("\r\n|\r|\n", " "), System.currentTimeMillis(), node.getSource().getUuid()});
+			LOGGER.info("Connection insert/update/delete row response end, threadId: {}, sql:{}, time: {}, total time: {}, duration mysql time: {}, uuid: {}",
+					new Object[]{ mySQLConnection.getThreadId(), node.getStatement().replaceAll("\r\n|\r|\n", " "), System.currentTimeMillis(), System.currentTimeMillis() - node.getSource().getLogTimer().getReceiveSqlTime(), System.currentTimeMillis() - node.getSource().getLogTimer().getSendToMysqlTime(), node.getSource().getLogTimer().getUuid()});
 		}
 		//
 		this.netOutBytes += data.length;
@@ -367,7 +368,8 @@ public class SingleNodeHandler implements ResponseHandler, Terminatable, LoadDat
 	public void rowEofResponse(byte[] eof, BackendConnection conn) {
 		if (conn instanceof MySQLConnection) {
 			MySQLConnection mySQLConnection = (MySQLConnection) conn;
-			LOGGER.info("Connection query row response end, threadId: {}, sql:{}, time: {}, uuid: {}", new Object[]{ mySQLConnection.getThreadId(), node.getStatement().replaceAll("\r\n|\r|\n", " "), System.currentTimeMillis(), node.getSource().getUuid()});
+			LOGGER.info("Connection insert/update/delete row response end, threadId: {}, sql:{}, time: {}, total time: {}, duration mysql time: {}, uuid: {}",
+					new Object[]{ mySQLConnection.getThreadId(), node.getStatement().replaceAll("\r\n|\r|\n", " "), System.currentTimeMillis(), System.currentTimeMillis() - node.getSource().getLogTimer().getReceiveSqlTime(), System.currentTimeMillis() - node.getSource().getLogTimer().getSendToMysqlTime(), node.getSource().getLogTimer().getUuid()});
 		}
 		
 		this.netOutBytes += eof.length;

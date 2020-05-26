@@ -29,6 +29,7 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import io.mycat.route.LogTimer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -293,7 +294,9 @@ public class ServerConnection extends FrontendConnection {
 					.getRouterservice()
 					.route(MycatServer.getInstance().getConfig().getSystem(),
 							schema, type, sql, this.charset, this);
-			rrs.setUuid(uuid);
+			LogTimer logTimer = new LogTimer();
+			logTimer.setUuid(uuid);
+			rrs.setLogTimer(logTimer);
 		} catch (Exception e) {
 			StringBuilder s = new StringBuilder();
 			LOGGER.warn(s.append(this).append(sql).toString() + " err:" + e.toString(),e);

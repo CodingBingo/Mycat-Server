@@ -293,7 +293,9 @@ public class MySQLConnection extends BackendAIOConnection {
 		}
 		lastTime = TimeUtil.currentTimeMillis();
 		packet.write(this);
-		LOGGER.info("Send query threadId: {}, sql:{}, time: {}, uuid: {}", new Object[]{threadId, query.replaceAll("\r\n|\r|\n", " "), System.currentTimeMillis(), rrn.getSource().getUuid()});
+
+		rrn.getSource().getLogTimer().setSendToMysqlTime(System.currentTimeMillis());
+		LOGGER.info("Send query threadId: {}, sql:{}, time: {}, duration time:{}, uuid: {}", new Object[]{threadId, query.replaceAll("\r\n|\r|\n", " "), System.currentTimeMillis(), System.currentTimeMillis() - rrn.getSource().getLogTimer().getReceiveSqlTime(), rrn.getSource().getLogTimer().getUuid()});
 	}
 
 	private static void getCharsetCommand(StringBuilder sb, int clientCharIndex) {

@@ -48,6 +48,7 @@ public class CommitNodeHandler implements ResponseHandler {
 	}
 
 	public void commit(BackendConnection conn) {
+		LOGGER.info(new StringBuilder("ENJOY_TRACE commit ").append(session.getSource()).append(session).append(conn).toString());
 		conn.setResponseHandler(CommitNodeHandler.this);
 		boolean isClosed=conn.isClosedOrQuit();
 		if(isClosed)

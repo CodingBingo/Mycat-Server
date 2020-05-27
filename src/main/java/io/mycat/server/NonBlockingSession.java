@@ -119,6 +119,8 @@ public class NonBlockingSession implements Session {
     @Override
     public void execute(RouteResultset rrs, int type) {
 
+        LOGGER.info(new StringBuilder("ENJOY_TRACE ").append(this.getSource()).append(rrs).append(this).toString());
+
         // clear prev execute resources
         clearHandlesResources();
         if (LOGGER.isDebugEnabled()) {
@@ -224,6 +226,7 @@ public class NonBlockingSession implements Session {
 
     public void commit() {
         final int initCount = target.size();
+        LOGGER.info(new StringBuilder("ENJOY_TRACE commit ").append(source).append(initCount).toString());
         if (initCount <= 0) {
             ByteBuffer buffer = source.allocate();
             buffer = source.writeToBuffer(OkPacket.OK, buffer);
@@ -265,6 +268,7 @@ public class NonBlockingSession implements Session {
 
     public void rollback() {
         final int initCount = target.size();
+        LOGGER.info(new StringBuilder("ENJOY_TRACE rollback ").append(source).append(initCount).toString());
         if (initCount <= 0) {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("no session bound connections found ,no need send rollback cmd ");

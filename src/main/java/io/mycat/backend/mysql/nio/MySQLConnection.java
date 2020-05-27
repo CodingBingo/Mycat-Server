@@ -282,7 +282,7 @@ public class MySQLConnection extends BackendAIOConnection {
 		packet.write(this);
 	}
 
-	protected void sendQueryCmd(RouteResultsetNode rrn, String query) {
+	protected void sendQueryCmd(String xaTxID, RouteResultsetNode rrn, String query) {
 		CommandPacket packet = new CommandPacket();
 		packet.packetId = 0;
 		packet.command = MySQLPacket.COM_QUERY;
@@ -294,8 +294,11 @@ public class MySQLConnection extends BackendAIOConnection {
 		lastTime = TimeUtil.currentTimeMillis();
 		packet.write(this);
 
+		LOGGER.info(new StringBuilder("ENJOY_TRACE ").append(this).append(rrn.getSource()).append(query).toString());
+
 		rrn.getSource().getLogTimer().setSendToMysqlTime(System.currentTimeMillis());
-		LOGGER.info("Send query threadId: {}, sql:{}, time: {}, duration time:{}, uuid: {}", new Object[]{threadId, query.replaceAll("\r\n|\r|\n", " "), System.currentTimeMillis(), System.currentTimeMillis() - rrn.getSource().getLogTimer().getReceiveSqlTime(), rrn.getSource().getLogTimer().getUuid()});
+		LOGGER.info("Send query threadId: {}, sql:{}, time: {}, duration time:{}, uuid: {}, XATXID: {}", new Object[]{threadId, query.replaceAll("\r\n|\r|\n", " "),
+				System.currentTimeMillis(), System.currentTimeMillis() - rrn.getSource().getLogTimer().getReceiveSqlTime(), rrn.getSource().getLogTimer().getUuid(), xaTxID});
 	}
 
 	private static void getCharsetCommand(StringBuilder sb, int clientCharIndex) {
@@ -418,6 +421,8 @@ public class MySQLConnection extends BackendAIOConnection {
 			boolean clientAutoCommit) {
 		String xaCmd = null;
 
+		LOGGER.info(new StringBuilder("ENJOY_TRACE ").append(this).append(rrn.getSource()).append("|").append(xaTxID).append("|").append(clientCharSetIndex).append("|").append(clientTxIsoLation).append("|").append(clientAutoCommit).toString());
+
 		boolean conAutoComit = this.autocommit;
 		String conSchema = this.schema;
 		boolean strictTxIsolation = MycatServer.getInstance().getConfig().getSystem().isStrictTxIsolation();
@@ -454,7 +459,7 @@ public class MySQLConnection extends BackendAIOConnection {
 						+"\n in pool\n"
 				+this.getPool().getConfig());
 			}
-			sendQueryCmd(rrn, rrn.getStatement());
+			sendQueryCmd(xaTxID, rrn, rrn.getStatement());
 			return;
 		}
 		CommandPacket schemaCmd = null;
@@ -492,7 +497,7 @@ public class MySQLConnection extends BackendAIOConnection {
 		// and our query sql to multi command at last
 		sb.append(rrn.getStatement()+";");
 		// syn and execute others
-		this.sendQueryCmd(rrn, sb.toString());
+		this.sendQueryCmd(xaTxID, rrn, sb.toString());
 		// waiting syn result...
 
 	}
@@ -573,7 +578,7 @@ public class MySQLConnection extends BackendAIOConnection {
 	}
 
 	public void commit() {
-
+		LOGGER.info(new StringBuilder("ENJOY_TRACE commit ").append(this).toString());
 		_COMMIT.write(this);
 
 	}
@@ -598,6 +603,7 @@ public class MySQLConnection extends BackendAIOConnection {
 	}
 
 	public void rollback() {
+		LOGGER.info(new StringBuilder("ENJOY_TRACE rollback ").append(this).toString());
 		_ROLLBACK.write(this);
 	}
 

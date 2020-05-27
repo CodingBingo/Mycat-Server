@@ -50,6 +50,7 @@ public class RollbackNodeHandler extends MultiNodeHandler {
 
 	public void rollback() {
 		final int initCount = session.getTargetCount();
+		LOGGER.info(new StringBuilder("ENJOY_TRACE rollback ").append(session.getSource()).append(session).append(initCount).toString());
 		lock.lock();
 		try {
 			reset(initCount);

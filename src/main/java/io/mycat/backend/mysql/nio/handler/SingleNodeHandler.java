@@ -169,6 +169,9 @@ public class SingleNodeHandler implements ResponseHandler, Terminatable, LoadDat
 		this.isRunning = true;
 		this.packetId = 0;
 		final BackendConnection conn = session.getTarget(node);
+
+		LOGGER.info(new StringBuilder("ENJOY_TRACE ").append(session.getSource()).append(rrs).toString());
+
 		LOGGER.debug("rrs.getRunOnSlave() " + rrs.getRunOnSlaveDebugInfo());
 		node.setRunOnSlave(rrs.getRunOnSlave());	// 实现 master/slave注解
 		LOGGER.debug("node.getRunOnSlave() " + node.getRunOnSlaveDebugInfo());
@@ -207,6 +210,9 @@ public class SingleNodeHandler implements ResponseHandler, Terminatable, LoadDat
 	}
 
 	private void _execute(BackendConnection conn) {
+
+		LOGGER.info(new StringBuilder("ENJOY_TRACE ").append(session.getSource()).append(rrs).append(conn).toString());
+
 		if (session.closed()) {
 			endRunning();
 			session.clearResources(true);
@@ -310,6 +316,7 @@ public class SingleNodeHandler implements ResponseHandler, Terminatable, LoadDat
 	public void okResponse(byte[] data, BackendConnection conn) {
 		if (conn instanceof MySQLConnection) {
 			MySQLConnection mySQLConnection = (MySQLConnection) conn;
+			LOGGER.info(new StringBuilder("ENJOY_TRACE ").append(session.getSource()).append(rrs).append(conn).toString());
 			LOGGER.info("Connection insert/update/delete row response end, threadId: {}, sql:{}, time: {}, total time: {}, duration mysql time: {}, uuid: {}",
 					new Object[]{ mySQLConnection.getThreadId(), node.getStatement().replaceAll("\r\n|\r|\n", " "), System.currentTimeMillis(), System.currentTimeMillis() - node.getSource().getLogTimer().getReceiveSqlTime(), System.currentTimeMillis() - node.getSource().getLogTimer().getSendToMysqlTime(), node.getSource().getLogTimer().getUuid()});
 		}

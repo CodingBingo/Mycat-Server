@@ -285,6 +285,8 @@ public class ServerConnection extends FrontendConnection {
 
 	public void routeEndExecuteSQL(String sql, final int type, final SchemaConfig schema) {
 		String uuid = UUID.randomUUID().toString();
+
+		LOGGER.info(new StringBuilder("ENJOY_TRACE ").append(this).append(sql).toString());
 		LOGGER.info("Receive business sql: {}, time: {}, uuid: {}", new Object[]{sql, System.currentTimeMillis(), uuid});
 		// 路由计算
 		RouteResultset rrs = null;
@@ -296,7 +298,10 @@ public class ServerConnection extends FrontendConnection {
 							schema, type, sql, this.charset, this);
 			LogTimer logTimer = new LogTimer();
 			logTimer.setUuid(uuid);
+			logTimer.setReceiveSqlTime(System.currentTimeMillis());
 			rrs.setLogTimer(logTimer);
+			int len = rrs.getNodes() == null ? 0 : rrs.getNodes().length;
+			LOGGER.info(new StringBuilder("ENJOY_TRACE ").append(this).append(rrs).toString());
 		} catch (Exception e) {
 			StringBuilder s = new StringBuilder();
 			LOGGER.warn(s.append(this).append(sql).toString() + " err:" + e.toString(),e);
@@ -315,6 +320,7 @@ public class ServerConnection extends FrontendConnection {
 	 * 提交事务
 	 */
 	public void commit() {
+		LOGGER.info(new StringBuilder("ENJOY_TRACE commit ").append(this).toString());
 		if (txInterrupted) {
 			LOGGER.warn("receive commit ,but found err message in Transaction {}",this);
 			this.rollback();
@@ -322,13 +328,14 @@ public class ServerConnection extends FrontendConnection {
 //					"Transaction error, need to rollback.");
 		} else {
 			session.commit();
-		}
+        }
 	}
 
 	/**
 	 * 回滚事务
 	 */
 	public void rollback() {
+		LOGGER.info(new StringBuilder("ENJOY_TRACE rollback ").append(this).toString());
 		// 状态检查
 		if (txInterrupted) {
 			txInterrupted = false;

@@ -54,7 +54,8 @@ public class ServerQueryHandler implements FrontendQueryHandler {
 
 		ServerConnection c = this.source;
 
-		LOGGER.info(new StringBuilder("ENJOY_TRACE ").append(c).append(sql).toString());
+		LOGGER.info("ENJOY_TRACE query start: {}, sql={}",
+				new Object[]{source.toLogString(), sql.replaceAll("\r\n|\r|\n", " ")});
 
 		if (LOGGER.isDebugEnabled()) {
 			LOGGER.debug(new StringBuilder().append(c).append(sql).toString());

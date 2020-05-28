@@ -881,7 +881,11 @@ public class JDBCConnection implements BackendConnection {
 			LOGGER.debug("UnsupportedEncodingException :"+ e.getMessage());
 		}		
 	}
-	
-	
+
+	@Override
+	public String toLogString() {
+		return "";
+	}
+
 
 }

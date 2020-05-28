@@ -119,7 +119,8 @@ public class NonBlockingSession implements Session {
     @Override
     public void execute(RouteResultset rrs, int type) {
 
-        LOGGER.info(new StringBuilder("ENJOY_TRACE ").append(this.getSource()).append(rrs).append(this).toString());
+        LOGGER.info("ENJOY_TRACE session execute: {}, type={}, session={}, rrs={}",
+                new Object[]{this.source.toLogString(), type, this.toLogString(), rrs.toLogString()});
 
         // clear prev execute resources
         clearHandlesResources();
@@ -226,7 +227,9 @@ public class NonBlockingSession implements Session {
 
     public void commit() {
         final int initCount = target.size();
-        LOGGER.info(new StringBuilder("ENJOY_TRACE commit ").append(source).append(initCount).toString());
+        LOGGER.info("ENJOY_TRACE session commit: {}, session={}, initCount={}",
+                new Object[]{this.source.toLogString(), this.toLogString(), initCount});
+
         if (initCount <= 0) {
             ByteBuffer buffer = source.allocate();
             buffer = source.writeToBuffer(OkPacket.OK, buffer);
@@ -268,7 +271,8 @@ public class NonBlockingSession implements Session {
 
     public void rollback() {
         final int initCount = target.size();
-        LOGGER.info(new StringBuilder("ENJOY_TRACE rollback ").append(source).append(initCount).toString());
+        LOGGER.info("ENJOY_TRACE session rollback: {}, session={}, initCount={}",
+                new Object[]{this.source.toLogString(), this.toLogString(), initCount});
         if (initCount <= 0) {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("no session bound connections found ,no need send rollback cmd ");
@@ -354,7 +358,11 @@ public class NonBlockingSession implements Session {
 
     public void releaseConnectionIfSafe(BackendConnection conn, boolean debug,
                                         boolean needRollback) {
+
         RouteResultsetNode node = (RouteResultsetNode) conn.getAttachment();
+
+        LOGGER.info("ENJOY_TRACE session releaseConnectionIfSafe: {}, session={}, conn={}, needRollback={}, node={}",
+                new Object[]{this.getSource().toLogString(), this.toLogString(), conn.toLogString(), needRollback, node == null ? null : node.getName()});
 
         if (node != null) {
         	/*  分表 在
@@ -383,8 +391,11 @@ public class NonBlockingSession implements Session {
 
     public void releaseConnection(RouteResultsetNode rrn, boolean debug,
                                   final boolean needRollback) {
-
         BackendConnection c = target.remove(rrn);
+
+        LOGGER.info("ENJOY_TRACE session releaseConnectionIfSafe: {}, session={}, conn={}, needRollback={}, rrn={}",
+                new Object[]{this.getSource().toLogString(), this.toLogString(), c == null ? null : c.toLogString(), needRollback, rrn.getName()});
+
         if (c != null) {
             if (debug) {
                 LOGGER.debug("release connection " + c);
@@ -554,6 +565,10 @@ public class NonBlockingSession implements Session {
     }
 
     public void clearResources(final boolean needRollback) {
+
+        LOGGER.info("ENJOY_TRACE session clearResources: {}, session={}, needRollback={}",
+                new Object[]{this.getSource().toLogString(), this.toLogString(), needRollback});
+
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("clear session resources " + this);
         }
@@ -632,4 +647,13 @@ public class NonBlockingSession implements Session {
 		}
 		return sb.toString();
 	}
+
+	public String toLogString() {
+        StringBuilder sb = new StringBuilder("{");
+        for (BackendConnection backCon : target.values()) {
+            sb.append(backCon.toLogString()).append(" # ");
+        }
+        sb.append("}");
+        return sb.toString();
+    }
 }

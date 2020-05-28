@@ -282,7 +282,7 @@ public class MySQLConnection extends BackendAIOConnection {
 		packet.write(this);
 	}
 
-	protected void sendQueryCmd(String xaTxID, RouteResultsetNode rrn, String query) {
+	protected void sendQueryCmd(String xaTxID, ServerConnection sc, RouteResultsetNode rrn, String query) {
 		CommandPacket packet = new CommandPacket();
 		packet.packetId = 0;
 		packet.command = MySQLPacket.COM_QUERY;
@@ -294,7 +294,8 @@ public class MySQLConnection extends BackendAIOConnection {
 		lastTime = TimeUtil.currentTimeMillis();
 		packet.write(this);
 
-		LOGGER.info(new StringBuilder("ENJOY_TRACE ").append(this).append(rrn.getSource()).append(query).toString());
+		LOGGER.info("ENJOY_TRACE connection sendQueryCmd: {}, session={}, conn={}, rrn={}, query={}",
+				new Object[]{sc == null ? null : sc.toLogString(), sc == null || sc.getSession2() == null ? null : sc.getSession2().toLogString(), this.toLogString(), rrn.getName(), query.replaceAll("\r\n|\r|\n", " ")});
 
 		rrn.getSource().getLogTimer().setSendToMysqlTime(System.currentTimeMillis());
 		LOGGER.info("Send query threadId: {}, sql:{}, time: {}, duration time:{}, uuid: {}, XATXID: {}", new Object[]{threadId, query.replaceAll("\r\n|\r|\n", " "),
@@ -379,6 +380,8 @@ public class MySQLConnection extends BackendAIOConnection {
 				conn.txIsolation = txtIsolation;
 			}
 			if (autocommit != null) {
+				LOGGER.info("ENJOY_TRACE connection setAutocommit: {}, newValue={}",
+						new Object[]{conn.toLogString(), autocommit});
 				conn.autocommit = autocommit;
 			}
 		}
@@ -412,16 +415,17 @@ public class MySQLConnection extends BackendAIOConnection {
 		if(sc.getSession2().getXaTXID()!=null){
 			xaTXID = sc.getSession2().getXaTXID()+",'"+getSchema()+"'";
 		}
-		synAndDoExecute(xaTXID, rrn, sc.getCharsetIndex(), sc.getTxIsolation(),
+		synAndDoExecute(xaTXID, sc, rrn, sc.getCharsetIndex(), sc.getTxIsolation(),
 				autocommit);
 	}
 
-	private void synAndDoExecute(String xaTxID, RouteResultsetNode rrn,
+	private void synAndDoExecute(String xaTxID, ServerConnection sc, RouteResultsetNode rrn,
 			int clientCharSetIndex, int clientTxIsoLation,
 			boolean clientAutoCommit) {
 		String xaCmd = null;
 
-		LOGGER.info(new StringBuilder("ENJOY_TRACE ").append(this).append(rrn.getSource()).append("|").append(xaTxID).append("|").append(clientCharSetIndex).append("|").append(clientTxIsoLation).append("|").append(clientAutoCommit).toString());
+		LOGGER.info("ENJOY_TRACE connection synAndDoExecute: {}, session={}, conn={}, rrn={}, clientAutoCommit={}",
+					new Object[]{sc == null ? null : sc.toLogString(), sc == null || sc.getSession2() == null ? null : sc.getSession2().toLogString(), this.toLogString(), rrn.getName(), clientAutoCommit});
 
 		boolean conAutoComit = this.autocommit;
 		String conSchema = this.schema;
@@ -459,7 +463,7 @@ public class MySQLConnection extends BackendAIOConnection {
 						+"\n in pool\n"
 				+this.getPool().getConfig());
 			}
-			sendQueryCmd(xaTxID, rrn, rrn.getStatement());
+			sendQueryCmd(xaTxID, sc, rrn, rrn.getStatement());
 			return;
 		}
 		CommandPacket schemaCmd = null;
@@ -497,7 +501,7 @@ public class MySQLConnection extends BackendAIOConnection {
 		// and our query sql to multi command at last
 		sb.append(rrn.getStatement()+";");
 		// syn and execute others
-		this.sendQueryCmd(xaTxID, rrn, sb.toString());
+		this.sendQueryCmd(xaTxID, sc, rrn, sb.toString());
 		// waiting syn result...
 
 	}
@@ -520,7 +524,7 @@ public class MySQLConnection extends BackendAIOConnection {
 		RouteResultsetNode rrn = new RouteResultsetNode("default",
 				ServerParse.SELECT, query);
 
-		synAndDoExecute(null, rrn, this.charsetIndex, this.txIsolation, true);
+		synAndDoExecute(null, null, rrn, this.charsetIndex, this.txIsolation, true);
 
 	}
 	/**
@@ -534,7 +538,7 @@ public class MySQLConnection extends BackendAIOConnection {
 		RouteResultsetNode rrn = new RouteResultsetNode("default",
 				ServerParse.SELECT, query);
 
-		synAndDoExecute(null, rrn, charsetIndex, this.txIsolation, true);
+		synAndDoExecute(null, null, rrn, charsetIndex, this.txIsolation, true);
 		
 	}
 	public long getLastTime() {
@@ -578,7 +582,9 @@ public class MySQLConnection extends BackendAIOConnection {
 	}
 
 	public void commit() {
-		LOGGER.info(new StringBuilder("ENJOY_TRACE commit ").append(this).toString());
+
+		LOGGER.info("ENJOY_TRACE connection commit: {}", this.toLogString());
+
 		_COMMIT.write(this);
 
 	}
@@ -603,11 +609,15 @@ public class MySQLConnection extends BackendAIOConnection {
 	}
 
 	public void rollback() {
-		LOGGER.info(new StringBuilder("ENJOY_TRACE rollback ").append(this).toString());
+		LOGGER.info("ENJOY_TRACE connection rollback: {}", this.toLogString());
+
 		_ROLLBACK.write(this);
 	}
 
 	public void release() {
+
+		LOGGER.info("ENJOY_TRACE connection release: {}", this.toLogString());
+
 		if (metaDataSyned == false) {// indicate connection not normalfinished
 										// ,and
 										// we can't know it's syn status ,so
@@ -713,6 +723,21 @@ public class MySQLConnection extends BackendAIOConnection {
 				+ ", host=" + host + ", port=" + port + ", statusSync="
 				+ statusSync + ", writeQueue=" + this.getWriteQueue().size()
 				+ ", modifiedSQLExecuted=" + modifiedSQLExecuted + "]";
+	}
+
+	@Override
+	public String toLogString() {
+		return "MySQLConnection " + "msconnid" + id + " [id=" + id + ", lastTime=" + lastTime
+				+ ", user=" + user
+				+ ", schema=" + schema + ", old shema=" + oldSchema
+				+ ", borrowed=" + borrowed + ", fromSlaveDB=" + fromSlaveDB
+				+ ", threadId=" + threadId + ", charset=" + charset
+				+ ", txIsolation=" + txIsolation + ", autocommit=" + autocommit
+				+ ", respHandler=" + (respHandler == null ? "null" : respHandler.getClass().getSimpleName())
+				+ ", host=" + host + ", port=" + port + ", statusSync="
+				+ statusSync + ", writeQueue=" + this.getWriteQueue().size()
+				+ ", modifiedSQLExecuted=" + modifiedSQLExecuted
+				+ ", isClosedOrQuit=" + isClosedOrQuit() + "]";
 	}
 
 	@Override

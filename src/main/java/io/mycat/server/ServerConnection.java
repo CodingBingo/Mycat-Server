@@ -99,6 +99,8 @@ public class ServerConnection extends FrontendConnection {
 	}
 
 	public void setAutocommit(boolean autocommit) {
+		LOGGER.info("ENJOY_TRACE sc setAutocommit: {}, newValue={}",
+				new Object[]{this.toLogString(), autocommit});
 		this.autocommit = autocommit;
 	}
 
@@ -162,6 +164,9 @@ public class ServerConnection extends FrontendConnection {
 	}
 
 	public void execute(String sql, int type) {
+		LOGGER.info("ENJOY_TRACE sc execute: {}, type={}, sql={}",
+				new Object[]{this.toLogString(), type, sql.replaceAll("\r\n|\r|\n", " ")});
+
 		//连接状态检查
 		if (this.isClosed()) {
 			LOGGER.warn("ignore execute ,server connection is closed " + this);
@@ -286,7 +291,8 @@ public class ServerConnection extends FrontendConnection {
 	public void routeEndExecuteSQL(String sql, final int type, final SchemaConfig schema) {
 		String uuid = UUID.randomUUID().toString();
 
-		LOGGER.info(new StringBuilder("ENJOY_TRACE ").append(this).append(sql).toString());
+		LOGGER.info("ENJOY_TRACE sc routeEndExecuteSQL: {}, type={}, sql={}",
+				new Object[]{this.toLogString(), type, sql.replaceAll("\r\n|\r|\n", " ")});
 		LOGGER.info("Receive business sql: {}, time: {}, uuid: {}", new Object[]{sql, System.currentTimeMillis(), uuid});
 		// 路由计算
 		RouteResultset rrs = null;
@@ -301,7 +307,8 @@ public class ServerConnection extends FrontendConnection {
 			logTimer.setReceiveSqlTime(System.currentTimeMillis());
 			rrs.setLogTimer(logTimer);
 			int len = rrs.getNodes() == null ? 0 : rrs.getNodes().length;
-			LOGGER.info(new StringBuilder("ENJOY_TRACE ").append(this).append(rrs).toString());
+			LOGGER.info("ENJOY_TRACE sc routeEndExecuteSQL result: {}, type={}, sql={}, rrs={}",
+					new Object[]{this.toLogString(), type, sql.replaceAll("\r\n|\r|\n", " "), rrs.toLogString()});
 		} catch (Exception e) {
 			StringBuilder s = new StringBuilder();
 			LOGGER.warn(s.append(this).append(sql).toString() + " err:" + e.toString(),e);
@@ -320,7 +327,8 @@ public class ServerConnection extends FrontendConnection {
 	 * 提交事务
 	 */
 	public void commit() {
-		LOGGER.info(new StringBuilder("ENJOY_TRACE commit ").append(this).toString());
+		LOGGER.info("ENJOY_TRACE sc commit: {}", this.toLogString());
+
 		if (txInterrupted) {
 			LOGGER.warn("receive commit ,but found err message in Transaction {}",this);
 			this.rollback();
@@ -335,7 +343,8 @@ public class ServerConnection extends FrontendConnection {
 	 * 回滚事务
 	 */
 	public void rollback() {
-		LOGGER.info(new StringBuilder("ENJOY_TRACE rollback ").append(this).toString());
+		LOGGER.info("ENJOY_TRACE sc rollback: {}", this.toLogString());
+
 		// 状态检查
 		if (txInterrupted) {
 			txInterrupted = false;
@@ -429,6 +438,14 @@ public class ServerConnection extends FrontendConnection {
 				+ ", autocommit=" + autocommit + ", schema=" + schema+ ", executeSql=" + executeSql + "]" +
 				this.getSession2();
 		
+	}
+
+	@Override
+	public String toLogString() {
+		return "ServerConnection [id=" + id + ", schema=" + schema + ", host="
+				+ host + ", user=" + user + ",txIsolation=" + txIsolation
+				+ ", autocommit=" + autocommit + ", schema=" + schema+ ", isLocked=" + isLocked
+				+ ", preAcStates=" + preAcStates + "]";
 	}
 
 	public boolean isPreAcStates() {

@@ -50,7 +50,8 @@ public class RollbackNodeHandler extends MultiNodeHandler {
 
 	public void rollback() {
 		final int initCount = session.getTargetCount();
-		LOGGER.info(new StringBuilder("ENJOY_TRACE rollback ").append(session.getSource()).append(session).append(initCount).toString());
+		LOGGER.info("ENJOY_TRACE handler rollback: {}, session={}, initCount={}",
+				new Object[]{session.getSource().toLogString(), session.toLogString(), initCount});
 		lock.lock();
 		try {
 			reset(initCount);
@@ -110,6 +111,9 @@ public class RollbackNodeHandler extends MultiNodeHandler {
 				continue;
 			}
 			final BackendConnection conn = session.getTarget(node);
+
+			LOGGER.info("ENJOY_TRACE handler rollback exe: {}, session={}, conn={}",
+					new Object[]{session.getSource().toLogString(), session.toLogString(), conn == null ? null : conn.toLogString()});
 
 			if (conn != null) {
 				boolean isClosed=conn.isClosedOrQuit();
@@ -181,6 +185,9 @@ public class RollbackNodeHandler extends MultiNodeHandler {
 
 	@Override
 	public void okResponse(byte[] ok, BackendConnection conn) {
+
+		LOGGER.info("ENJOY_TRACE handler okResponse: {}, session={}, conn={}",
+				new Object[]{session.getSource().toLogString(), session.toLogString(), conn.toLogString()});
 		
 		if(session.getXaTXID()!=null) {
 			//xa 

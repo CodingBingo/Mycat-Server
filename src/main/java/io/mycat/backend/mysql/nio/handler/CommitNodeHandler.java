@@ -48,7 +48,9 @@ public class CommitNodeHandler implements ResponseHandler {
 	}
 
 	public void commit(BackendConnection conn) {
-		LOGGER.info(new StringBuilder("ENJOY_TRACE commit ").append(session.getSource()).append(session).append(conn).toString());
+		LOGGER.info("ENJOY_TRACE handler execute: {}, session={}, conn={}",
+				new Object[]{session.getSource().toLogString(), session.toLogString(), conn.toLogString()});
+
 		conn.setResponseHandler(CommitNodeHandler.this);
 		boolean isClosed=conn.isClosedOrQuit();
 		if(isClosed)
@@ -84,6 +86,9 @@ public class CommitNodeHandler implements ResponseHandler {
 
 	@Override
 	public void okResponse(byte[] ok, BackendConnection conn) {
+		LOGGER.info("ENJOY_TRACE handler okResponse: {}, session={}, conn={}",
+				new Object[]{session.getSource().toLogString(), session.toLogString(), conn.toLogString()});
+
 		if(conn instanceof MySQLConnection)
 		{
 			MySQLConnection mysqlCon = (MySQLConnection) conn;

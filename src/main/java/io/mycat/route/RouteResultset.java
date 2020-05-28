@@ -85,8 +85,8 @@ public final class RouteResultset implements Serializable {
     public void setSelectForUpdate(boolean selectForUpdate) {
         this.selectForUpdate = selectForUpdate;
     }
-	
-	
+
+
 	 private List<String> tables;
 
     public List<String> getTables() {
@@ -346,7 +346,7 @@ public final class RouteResultset implements Serializable {
             for (RouteResultsetNode node : nodes)
             {
                 String dbType = dataNodeDbTypeMap.get(node.getName());
-                if (dbType.equalsIgnoreCase("mysql")) 
+                if (dbType.equalsIgnoreCase("mysql"))
                 {
                     node.setStatement(sql);   //mysql之前已经加好limit
                 } else if (sqlMapCache.containsKey(dbType))
@@ -418,7 +418,7 @@ public final class RouteResultset implements Serializable {
 	public Set<String> getSubTables() {
 		return this.subTables;
 	}
-	
+
 	public boolean isDistTable(){
 		if(this.getSubTables()!=null && !this.getSubTables().isEmpty() ){
 			return true;
@@ -437,6 +437,19 @@ public final class RouteResultset implements Serializable {
             }
         }
         s.append("\n}");
+        return s.toString();
+    }
+
+    public String toLogString() {
+        StringBuilder s = new StringBuilder();
+        s.append(", route={");
+        if (nodes != null) {
+            for (int i = 0; i < nodes.length; ++i) {
+                s.append(FormatUtil.format(i + 1, 3));
+                s.append(" -> ").append(nodes[i].getName()).append(" # ");
+            }
+        }
+        s.append("}");
         return s.toString();
     }
 

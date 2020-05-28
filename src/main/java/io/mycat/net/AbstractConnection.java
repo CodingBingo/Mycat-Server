@@ -618,5 +618,9 @@ public abstract class AbstractConnection implements NIOConnection {
 	}
 	public void onConnectfinish() {
 		LOGGER.debug("连接后台真正完成");
-	}	
+	}
+
+	public String toLogString() {
+		return "";
+	}
 }

@@ -170,7 +170,8 @@ public class SingleNodeHandler implements ResponseHandler, Terminatable, LoadDat
 		this.packetId = 0;
 		final BackendConnection conn = session.getTarget(node);
 
-		LOGGER.info(new StringBuilder("ENJOY_TRACE ").append(session.getSource()).append(rrs).toString());
+		LOGGER.info("ENJOY_TRACE handler execute: {}, session={}, rrs={}",
+				new Object[]{session.getSource().toLogString(), session.toLogString(), rrs.toLogString()});
 
 		LOGGER.debug("rrs.getRunOnSlave() " + rrs.getRunOnSlaveDebugInfo());
 		node.setRunOnSlave(rrs.getRunOnSlave());	// 实现 master/slave注解
@@ -211,7 +212,8 @@ public class SingleNodeHandler implements ResponseHandler, Terminatable, LoadDat
 
 	private void _execute(BackendConnection conn) {
 
-		LOGGER.info(new StringBuilder("ENJOY_TRACE ").append(session.getSource()).append(rrs).append(conn).toString());
+		LOGGER.info("ENJOY_TRACE handler _execute: {}, session={}, conn={}, rrs={}",
+				new Object[]{session.getSource().toLogString(), session.toLogString(), conn.toLogString(), rrs.toLogString()});
 
 		if (session.closed()) {
 			endRunning();
@@ -316,14 +318,20 @@ public class SingleNodeHandler implements ResponseHandler, Terminatable, LoadDat
 	public void okResponse(byte[] data, BackendConnection conn) {
 		if (conn instanceof MySQLConnection) {
 			MySQLConnection mySQLConnection = (MySQLConnection) conn;
-			LOGGER.info(new StringBuilder("ENJOY_TRACE ").append(session.getSource()).append(rrs).append(conn).toString());
+
+			LOGGER.info("ENJOY_TRACE handler okResponse: {}, session={}, conn={}",
+					new Object[]{session.getSource().toLogString(), session.toLogString(), conn.toLogString()});
+
 			LOGGER.info("Connection insert/update/delete row response end, threadId: {}, sql:{}, time: {}, total time: {}, duration mysql time: {}, uuid: {}",
 					new Object[]{ mySQLConnection.getThreadId(), node.getStatement().replaceAll("\r\n|\r|\n", " "), System.currentTimeMillis(), System.currentTimeMillis() - node.getSource().getLogTimer().getReceiveSqlTime(), System.currentTimeMillis() - node.getSource().getLogTimer().getSendToMysqlTime(), node.getSource().getLogTimer().getUuid()});
 		}
 		//
 		this.netOutBytes += data.length;
 		
-		boolean executeResponse = conn.syncAndExcute();		
+		boolean executeResponse = conn.syncAndExcute();
+		LOGGER.info("ENJOY_TRACE handler okResponse conn.syncAndExcute: {}, session={}, conn={}, executeResponse={}",
+				new Object[]{session.getSource().toLogString(), session.toLogString(), conn.toLogString(), executeResponse});
+
 		if (executeResponse) {
 			ServerConnection source = session.getSource();
 			OkPacket ok = new OkPacket();
@@ -338,6 +346,8 @@ public class SingleNodeHandler implements ResponseHandler, Terminatable, LoadDat
 				ok.packetId = ++packetId;// OK_PACKET
 			}
 
+			LOGGER.info("ENJOY_TRACE handler okResponse conn.syncAndExcute: {}, session={}, conn={}, isCanClose2Client={}",
+					new Object[]{session.getSource().toLogString(), session.toLogString(), conn.toLogString(), isCanClose2Client});
 
 			if (isCanClose2Client) {
 				session.releaseConnectionIfSafe(conn, LOGGER.isDebugEnabled(), false);

@@ -101,6 +101,9 @@ public class ServerConnection extends FrontendConnection {
 	public void setAutocommit(boolean autocommit) {
 		LOGGER.info("ENJOY_TRACE sc setAutocommit: {}, newValue={}",
 				new Object[]{this.toLogString(), autocommit});
+		if (this.autocommit != autocommit) {
+			setPreAcStates(this.autocommit);
+		}
 		this.autocommit = autocommit;
 	}
 

@@ -409,7 +409,7 @@ public class NonBlockingSession implements Session {
                 } else
                 //if (needRollback)
                 {
-                    c.setResponseHandler(new RollbackReleaseHandler());
+                    c.setResponseHandler(new RollbackReleaseHandler(this));
                     c.rollback();
                 }
                 //else {

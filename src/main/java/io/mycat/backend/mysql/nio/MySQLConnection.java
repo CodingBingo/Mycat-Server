@@ -23,6 +23,7 @@
  */
 package io.mycat.backend.mysql.nio;
 
+import io.mycat.backend.mysql.nio.handler.ResetReleaseHandler;
 import io.mycat.backend.mysql.xa.TxState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -618,11 +619,27 @@ public class MySQLConnection extends BackendAIOConnection {
 
 		LOGGER.info("ENJOY_TRACE connection release: {}", this.toLogString());
 
+		if(isAutocommit()) {
+			doRelease();
+		} else {
+			this.setResponseHandler(new ResetReleaseHandler());
+			StringBuilder sb = new StringBuilder();
+			getAutocommitCommand(sb, true);
+			this.execCmd(sb.toString());
+		}
+	}
+
+	public void doRelease() {
+
+		LOGGER.info("ENJOY_TRACE connection doRelease: {}", this.toLogString());
+
+		autocommit = true;
+
 		if (metaDataSyned == false) {// indicate connection not normalfinished
-										// ,and
-										// we can't know it's syn status ,so
-										// close
-										// it
+			// ,and
+			// we can't know it's syn status ,so
+			// close
+			// it
 			LOGGER.warn("can't sure connection syn result,so close it " + this);
 			this.respHandler = null;
 			this.close("syn status unkown ");
@@ -631,10 +648,12 @@ public class MySQLConnection extends BackendAIOConnection {
 		metaDataSyned = true;
 		attachment = null;
 		statusSync = null;
-		modifiedSQLExecuted = false;		
+		modifiedSQLExecuted = false;
 		xaStatus = TxState.TX_INITIALIZE_STATE;
 		setResponseHandler(null);
 		pool.releaseChannel(this);
+
+		LOGGER.info("ENJOY_TRACE connection doRelease done: {}", this.toLogString());
 	}
 
 	public boolean setResponseHandler(ResponseHandler queryHandler) {

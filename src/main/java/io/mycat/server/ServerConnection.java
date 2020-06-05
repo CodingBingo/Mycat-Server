@@ -58,7 +58,7 @@ public class ServerConnection extends FrontendConnection {
 
 	private volatile int txIsolation;
 	private volatile boolean autocommit;
-	private volatile boolean preAcStates; //上一个ac状态,默认为true
+	private volatile boolean preAcStates = true; //上一个ac状态,默认为true
 	private volatile boolean txInterrupted;
 	private volatile String txInterrputMsg = "";
 	private long lastInsertId;

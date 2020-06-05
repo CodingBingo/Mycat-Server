@@ -186,7 +186,7 @@ public class RollbackNodeHandler extends MultiNodeHandler {
 	@Override
 	public void okResponse(byte[] ok, BackendConnection conn) {
 
-		LOGGER.info("ENJOY_TRACE handler okResponse: {}, session={}, conn={}",
+		LOGGER.info("ENJOY_TRACE rollback handler okResponse: {}, session={}, conn={}",
 				new Object[]{session.getSource().toLogString(), session.toLogString(), conn.toLogString()});
 		
 		if(session.getXaTXID()!=null) {

@@ -23,29 +23,27 @@
  */
 package io.mycat.backend.mysql.nio.handler;
 
-import java.util.List;
-
-import io.mycat.server.NonBlockingSession;
-import org.slf4j.Logger; import org.slf4j.LoggerFactory;
-
 import io.mycat.backend.BackendConnection;
+import io.mycat.backend.mysql.nio.MySQLConnection;
+import io.mycat.server.NonBlockingSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 /**
  * @author mycat
  */
-public class RollbackReleaseHandler implements ResponseHandler {
+public class ResetReleaseHandler implements ResponseHandler {
 	private static final Logger logger = LoggerFactory
-			.getLogger(RollbackReleaseHandler.class);
+			.getLogger(ResetReleaseHandler.class);
 
-	private NonBlockingSession session;
-
-	public RollbackReleaseHandler(NonBlockingSession session) {
-		this.session = session;
+	public ResetReleaseHandler() {
 	}
 
 	@Override
 	public void connectionAcquired(BackendConnection conn) {
-		logger.error("unexpected invocation: connectionAcquired from rollback-release");
+		logger.error("unexpected invocation: connectionAcquired from reset-release");
 	}
 
 	@Override
@@ -60,10 +58,10 @@ public class RollbackReleaseHandler implements ResponseHandler {
 
 	@Override
 	public void okResponse(byte[] ok, BackendConnection conn) {
-		logger.info("ENJOY_TRACE rollback release handler okResponse: {}, session={}, conn={}",
-				new Object[]{session.getSource().toLogString(), session.toLogString(), conn.toLogString()});
-		logger.debug("autocomit is false,but no commit or rollback ,so mycat rollbacked backend conn "+conn);
-		conn.release();
+		logger.info("ENJOY_TRACE reset release handler okResponse: {}", new Object[]{conn.toLogString()});
+		if(conn instanceof MySQLConnection) {
+			((MySQLConnection) conn).doRelease();
+		}
 	}
 
 	@Override
